@@ -1,0 +1,89 @@
+#include<Servo.h>
+
+int irPin = 2;
+int trigPin1 = 7;
+int echoPin1 = 3;
+int trigPin2 = 8;
+int echoPin2 = 4;
+int travelTime1;
+int travelTime2;
+int dt = 10;
+int dt1 = 25;
+int moisturePin = 9; //connect A0 to pin A1 on arduino
+int servoPin = 11; //connect yellow wire to pin 11, red to 5V and black to ground
+int servoPos = 90;
+float distance1;
+float distance2;
+int buzzPin = 5; // connect red wire to pin 5 and blue to ground
+int moistureVal;
+
+Servo myServo;
+
+void setup(){
+  myServo.attach(servoPin);
+  pinMode(moisturePin, INPUT);
+  pinMode(buzzPin, OUTPUT);
+  pinMode(trigPin1, OUTPUT);
+  pinMode(echoPin1, INPUT);
+  pinMode(trigPin2, OUTPUT);
+  pinMode(echoPin2, INPUT);
+  pinMode(irPin, INPUT);
+  
+  Serial.begin(9600);
+}
+
+void loop(){
+  int irValue = digitalRead(irPin);
+//  Serial.println(irValue);
+  
+  if(irValue != LOW){
+      myServo.write(90);
+  }
+
+  if(irValue == LOW){
+      
+      moistureVal = digitalRead(moisturePin);
+//      Serial.println(moistureVal);
+      delay(750);
+      if(moistureVal == 1){
+        servoPos = 160;
+      }
+      else{
+        servoPos = 30;
+      }
+      
+      myServo.write(servoPos);
+    }
+
+    
+    digitalWrite(trigPin1, LOW);
+    delayMicroseconds(dt);
+    digitalWrite(trigPin1, HIGH);
+    delayMicroseconds(dt);
+    digitalWrite(trigPin1, LOW);
+       
+    travelTime1 = pulseIn(echoPin1, HIGH);
+    
+    distance1 = (travelTime1*765.0*5280.0*12.0*2.54)/(3600.0*1000000.0*2.0); // distance1 is in cm
+    Serial.print("Distance 1 ");
+    Serial.println(distance1);
+   
+    digitalWrite(trigPin2, LOW);
+    delayMicroseconds(dt);
+    digitalWrite(trigPin2, HIGH);
+    delayMicroseconds(dt);
+    digitalWrite(trigPin2, LOW);
+        
+    travelTime2 = pulseIn(echoPin2, HIGH);
+    
+    distance2 = travelTime2/29.0/2; // distance2 is in cm
+    Serial.print("Distance 2 ");
+    Serial.println(distance2);
+
+    if(distance1 < 5 || distance2 < 4){
+        digitalWrite(buzzPin, HIGH);
+      }else{
+        digitalWrite(buzzPin, LOW);
+      }
+    delay(2000);
+}
